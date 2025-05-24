@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مولد النماذج التفاعلي</title>
+    <link href="./assets/bootstrap.min.css" rel="stylesheet">
+    <link href="./assets/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="./assets/jqueryui.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Tajawal', sans-serif;
+        }
+        .container {
+            max-width: 1200px;
+            padding-top: 2rem;
+        }
+        .card {
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+        .nav-tabs .nav-link {
+            border-radius: 0.5rem;
+            margin-left: 0.5rem;
+            padding: 0.75rem 1.5rem;
+        }
+        .nav-tabs .nav-link.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        .field-card {
+            border: 1px solid #dee2e6;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            background-color: #fff;
+            border-radius: 0.5rem;
+            cursor: move;
+            transition: transform 0.2s ease;
+        }
+        .field-card.ui-sortable-helper {
+            transform: scale(1.02);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            opacity: 0.9;
+        }
+        .field-card:hover {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .field-list {
+            min-height: 100px;
+            padding: 1rem;
+            background-color: #f1f3f5;
+            border-radius: 0.5rem;
+        }
+        .field-placeholder {
+            border: 2px dashed #ccc;
+            height: 100px;
+            border-radius: 0.5rem;
+            background-color: #e9ecef;
+        }
+        .input-type-draggable {
+            padding: 0.5rem 1rem;
+            margin: 0.5rem;
+            background-color: #e9ecef;
+            border-radius: 0.25rem;
+            cursor: grab;
+            display: inline-block;
+            transition: background-color 0.2s ease;
+        }
+        .input-type-draggable.ui-draggable-dragging {
+            background-color: #007bff;
+            color: white;
+        }
+        .input-types-list {
+            background-color: #fff;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            direction: ltr;
+            text-align: left;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .btn-copy {
+            transition: all 0.2s ease;
+        }
+        .btn-copy.copied {
+            background-color: #28a745 !important;
+        }
+        .is-invalid {
+            border-color: #dc3545;
+        }
+        .invalid-feedback {
+            display: none;
+            color: #dc3545;
+        }
+        .is-invalid ~ .invalid-feedback {
+            display: block;
+        }
+        .field-options {
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        .field-options.collapsed {
+            height: 0;
+            opacity: 0;
+            padding: 0;
+            margin: 0;
+        }
+        .btn-toggle-options {
+            transition: transform 0.3s ease;
+        }
+        .btn-toggle-options.collapsed {
+            transform: rotate(180deg);
+        }
+        .design-controls {
+            background-color: #fff;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .color-picker {
+            width: 50px;
+            height: 30px;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-5 fw-bold">مولد النماذج التفاعلي</h1>
+
+        <!-- Form Info -->
+        <div class="card p-4 mb-4">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">عنوان النموذج</label>
+                    <input type="text" class="form-control" id="formTitle" value="نموذج جديد" required minlength="3">
+                    <div class="invalid-feedback">يرجى إدخال عنوان يتكون من 3 أحرف على الأقل</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-medium">وصف النموذج</label>
+                    <input type="text" class="form-control" id="formDescription" value="يرجى ملء النموذج أدناه." required minlength="3">
+                    <div class="invalid-feedback">يرجى إدخال وصف يتكون من 3 أحرف على الأقل</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Design Controls -->
+        <div class="design-controls card p-4 mb-4">
+            <h5>تخصيص التصميم</h5>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">لون خلفية النموذج</label>
+                    <input type="color" class="form-control color-picker" id="formBackgroundColor" value="#ffffff">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">لون زر الإرسال</label>
+                    <input type="color" class="form-control color-picker" id="buttonColor" value="#007bff">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">نص زر الإرسال</label>
+                    <input type="text" class="form-control" id="buttonText" value="إرسال" required minlength="1">
+                    <div class="invalid-feedback">يرجى إدخال نص للزر</div>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">تخطيط الحقول</label>
+                    <select class="form-select" id="gridLayout">
+                        <option value="single">عمود واحد</option>
+                        <option value="double">عمودين</option>
+                        <option value="triple">ثلاثة أعمدة</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-4" id="formTabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#builder">بناء النموذج</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#preview">معاينة</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#code">الكود</a>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="builder">
+                <div class="text-center mb-4">
+                    <h5>أنواع الحقول المتاحة</h5>
+                    <div class="input-types-list">
+                        <span class="input-type-draggable" data-type="text">نص</span>
+                        <span class="input-type-draggable" data-type="email">بريد إلكتروني</span>
+                        <span class="input-type-draggable" data-type="password">كلمة مرور</span>
+                        <span class="input-type-draggable" data-type="number">رقم</span>
+                        <span class="input-type-draggable" data-type="tel">هاتف</span>
+                        <span class="input-type-draggable" data-type="url">رابط</span>
+                        <span class="input-type-draggable" data-type="textarea">نص طويل</span>
+                        <span class="input-type-draggable" data-type="select">قائمة منسدلة</span>
+                        <span class="input-type-draggable" data-type="radio">اختيار واحد</span>
+                        <span class="input-type-draggable" data-type="checkbox">اختيار متعدد</span>
+                        <span class="input-type-draggable" data-type="date">تاريخ</span>
+                        <span class="input-type-draggable" data-type="time">وقت</span>
+                        <span class="input-type-draggable" data-type="file">ملف</span>
+                    </div>
+                </div>
+                <div id="fieldList" class="field-list"></div>
+                <div id="noFields" class="text-center py-5 text-muted d-none">
+                    لا توجد حقول بعد. اسحب نوع حقل من الأعلى للبدء.
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="preview">
+                <div id="previewForm" class="card p-4"></div>
+            </div>
+
+            <div class="tab-pane fade" id="code">
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">كود HTML</h5>
+                        <button class="btn btn-outline-secondary btn-sm btn-copy" data-target="htmlCode">نسخ</button>
+                    </div>
+                    <pre id="htmlCode"></pre>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">كود JSON</h5>
+                        <button class="btn btn-outline-secondary btn-sm btn-copy" data-target="jsonCode">نسخ</button>
+                    </div>
+                    <pre id="jsonCode"></pre>
+                </div>
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">دالة JavaScript</h5>
+                        <button class="btn btn-outline-secondary btn-sm btn-copy" data-target="jsCode">نسخ</button>
+                    </div>
+                    <pre id="jsCode"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Field Template -->
+    <template id="fieldTemplate">
+        <div class="field-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="field-title mb-0">حقل #<span class="field-index"></span></h5>
+                <div>
+                    <button class="btn btn-outline-primary btn-sm btn-toggle-options me-2">
+                        <i class="bi bi-chevron-down"></i>
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm btn-delete-field">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="field-options">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">التسمية</label>
+                        <input type="text" class="form-control field-label" value="حقل جديد" required minlength="2">
+                        <div class="invalid-feedback">التسمية يجب أن تحتوي على حرفين على الأقل</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">نوع الحقل</label>
+                        <select class="form-select field-type">
+                            <option value="text">نص</option>
+                            <option value="email">بريد إلكتروني</option>
+                            <option value="password">كلمة مرور</option>
+                            <option value="number">رقم</option>
+                            <option value="tel">هاتف</option>
+                            <option value="url">رابط</option>
+                            <option value="textarea">نص طويل</option>
+                            <option value="select">قائمة منسدلة</option>
+                            <option value="radio">اختيار واحد</option>
+                            <option value="checkbox">اختيار متعدد</option>
+                            <option value="date">تاريخ</option>
+                            <option value="time">وقت</option>
+                            <option value="file">ملف</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">النص التوضيحي</label>
+                        <input type="text" class="form-control field-placeholder" maxlength="100">
+                        <div class="invalid-feedback">النص التوضيحي يجب أن يكون أقل من 100 حرف</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">نص المساعدة</label>
+                        <input type="text" class="form-control field-help-text" maxlength="100">
+                        <div class="invalid-feedback">نص المساعدة يجب أن يكون أقل من 100 حرف</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">نمط التحقق (Regex)</label>
+                        <input type="text" class="form-control field-pattern" placeholder="مثال: ^[a-zA-Z0-9]+$">
+                        <div class="invalid-feedback">يرجى إدخال نمط Regex صالح</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">رسالة الخطأ</label>
+                        <input type="text" class="form-control field-error-message" maxlength="100">
+                        <div class="invalid-feedback">رسالة الخطأ يجب أن تكون أقل من 100 حرف</div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input field-required">
+                        <label class="form-check-label">مطلوب</label>
+                    </div>
+                </div>
+                <div class="textarea-options d-none mt-3">
+                    <label class="form-label">عدد الصفوف</label>
+                    <input type="number" class="form-control field-rows w-25" min="1" max="10" value="3" required>
+                    <div class="invalid-feedback">يجب أن يكون بين 1 و10</div>
+                </div>
+                <div class="options-section d-none mt-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0">الخيارات</h6>
+                        <button class="btn btn-outline-success btn-sm btn-add-option">
+                            <i class="bi bi-plus-lg me-1"></i>إضافة خيار
+                        </button>
+                    </div>
+                    <div class="options-list"></div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Option Template -->
+    <template id="optionTemplate">
+        <div class="d-flex align-items-center mb-2">
+            <input type="text" class="form-control option-value me-2" placeholder="القيمة" required minlength="1">
+            <input type="text" class="form-control option-label me-2" placeholder="التسمية" required minlength="1">
+            <button class="btn btn-outline-danger btn-sm btn-delete-option">
+                <i class="bi bi-trash"></i>
+            </button>
+            <div class="invalid-feedback">يجب ملء كلا الحقلين</div>
+        </div>
+    </template>
+
+    <!-- Scripts -->
+    <script src="./assets/JQuery.min.js"></script>
+    <script src="./assets/jqueryui.min.js"></script>
+    <script src="./assets/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+            return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+            if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+                try {
+                    var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                    var firstSheetName = workbook.SheetNames[0];
+                    var worksheet = workbook.Sheets[firstSheetName];
+                    var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                    var filteredData = jsonData.filter(row => row.some(filledCell));
+                    var headerRowIndex = filteredData.findIndex((row, index) =>
+                        row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                    );
+                    if (headerRowIndex === -1 || headerRowIndex > 25) {
+                        headerRowIndex = 0;
+                    }
+                    var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
+                    csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                    return csv;
+                } catch (e) {
+                    console.error(e);
+                    return "";
+                }
+            }
+            return gk_fileData[filename] || "";
+        }
+
+        $(document).ready(function() {
+            const fields = [];
+            const designSettings = {
+                formBackgroundColor: '#ffffff',
+                buttonColor: '#007bff',
+                buttonText: 'إرسال',
+                gridLayout: 'single'
+            };
+            const defaultValidations = {
+                text: {
+                    pattern: '^[a-zA-Z0-9\\s]+$',
+                    errorMessage: 'برجاء إدخال أحرف أو أرقام أو مسافات فقط'
+                },
+                email: {
+                    pattern: '^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$',
+                    errorMessage: 'برجاء إدخال بريد إلكتروني صالح'
+                },
+                number: {
+                    pattern: '^-?\\d*\\.?\\d+$',
+                    errorMessage: 'برجاء إدخال رقم صالح'
+                },
+                password: {
+                    pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,}$',
+                    errorMessage: 'يجب أن تكون كلمة المرور مكونة من 8 أحرف على الأقل مع وجود حرف كبير وحرف صغير ورقم'
+                }
+            };
+
+            function generateFieldId() {
+                return 'field_' + Date.now() + Math.random().toString(36).substr(2, 5);
+            }
+
+            function updateFieldIndexes() {
+                $('#fieldList .field-card').each(function(index) {
+                    $(this).find('.field-index').text(index + 1);
+                });
+                $('#noFields').toggle(fields.length === 0);
+            }
+
+            function validateInput($input) {
+                const minLength = $input.attr('minlength');
+                const maxLength = $input.attr('maxlength') || 100;
+                const value = $input.val().trim();
+                
+                if ($input.prop('required') && !value) {
+                    $input.addClass('is-invalid');
+                    return false;
+                }
+                if (minLength && value.length < parseInt(minLength)) {
+                    $input.addClass('is-invalid');
+                    return false;
+                }
+                if (maxLength && value.length > parseInt(maxLength)) {
+                    $input.addClass('is-invalid');
+                    return false;
+                }
+                if ($input.attr('type') === 'number') {
+                    const min = parseInt($input.attr('min')) || 1;
+                    const max = parseInt($input.attr('max')) || 10;
+                    const num = parseInt(value);
+                    if (isNaN(num) || num < min || num > max) {
+                        $input.addClass('is-invalid');
+                        return false;
+                    }
+                }
+                if ($input.hasClass('field-pattern') && value) {
+                    try {
+                        new RegExp(value);
+                    } catch (e) {
+                        $input.addClass('is-invalid');
+                        return false;
+                    }
+                }
+                $input.removeClass('is-invalid');
+                return true;
+            }
+
+            function validateForm() {
+                let isValid = true;
+                $('#formTitle, #formDescription, .field-label, .field-placeholder, .field-help-text, .option-value, .option-label, .field-rows, #buttonText, .field-pattern, .field-error-message').each(function() {
+                    if (!validateInput($(this))) {
+                        isValid = false;
+                    }
+                });
+                return isValid;
+            }
+
+            function addField(type = 'text') {
+                const $template = $($('#fieldTemplate').html());
+                const defaultValidation = defaultValidations[type] || { pattern: '', errorMessage: '' };
+                const field = {
+                    id: generateFieldId(),
+                    label: 'حقل جديد',
+                    type: type,
+                    required: false,
+                    placeholder: '',
+                    helpText: '',
+                    validation: {
+                        pattern: defaultValidation.pattern,
+                        errorMessage: defaultValidation.errorMessage
+                    },
+                    options: [],
+                    rows: 3
+                };
+                fields.push(field);
+                $template.data('field', field);
+                $template.attr('data-id', field.id);
+                $template.find('.field-label').val(field.label);
+                $template.find('.field-type').val(field.type);
+                $template.find('.field-required').prop('checked', field.required);
+                $template.find('.field-placeholder').val(field.placeholder);
+                $template.find('.field-help-text').val(field.helpText);
+                $template.find('.field-pattern').val(field.validation.pattern);
+                $template.find('.field-error-message').val(field.validation.errorMessage);
+                $template.find('.field-rows').val(field.rows);
+                updateFieldIndexes();
+                $('#fieldList').append($template);
+                updateFieldOptions($template, field.type);
+                validateInput($template.find('.field-label'));
+                $('#fieldList').sortable('refresh');
+            }
+
+            function updateFieldOptions($card, type) {
+                const needsOptions = ['select', 'radio', 'checkbox'].includes(type);
+                $card.find('.options-section').toggleClass('d-none', !needsOptions);
+                $card.find('.textarea-options').toggleClass('d-none', type !== 'textarea');
+            }
+
+            function addOption($card, field) {
+                const $option = $($('#optionTemplate').html());
+                const option = { value: 'option_' + Date.now(), label: 'خيار جديد' };
+                field.options.push(option);
+                $option.find('.option-value').val(option.value);
+                $option.find('.option-label').val(option.label);
+                $card.find('.options-list').append($option);
+                validateInput($option.find('.option-value'));
+                validateInput($option.find('.option-label'));
+            }
+
+            function toggleFieldOptions($card) {
+                const $options = $card.find('.field-options');
+                const $button = $card.find('.btn-toggle-options');
+                $options.toggleClass('collapsed');
+                $button.toggleClass('collapsed');
+                if ($options.hasClass('collapsed')) {
+                    $options.css('height', '0');
+                    setTimeout(() => {
+                        $options.css('padding', '0');
+                        $options.css('margin', '0');
+                    }, 300);
+                } else {
+                    $options.css({
+                        'height': 'auto',
+                        'padding': '',
+                        'margin': ''
+                    });
+                }
+            }
+
+            function generateFormHTML() {
+                const gridClass = designSettings.gridLayout === 'double' ? 'col-md-6' : 
+                                 designSettings.gridLayout === 'triple' ? 'col-md-4' : 'col-12';
+                let fieldsHTML = fields.map((field, index) => {
+                    let fieldHTML = '';
+                    const effectiveValidation = field.validation.pattern ? field.validation : (defaultValidations[field.type] || { pattern: '', errorMessage: '' });
+                    const commonAttrs = `data-field="${field.id}" data-label="${field.label}" data-type="${field.type}"${field.required ? ' required' : ''}${field.placeholder ? ' placeholder="' + field.placeholder + '"' : ''}${field.helpText ? ' data-help-text="' + field.helpText + '"' : ''}${effectiveValidation.pattern ? ' pattern="' + effectiveValidation.pattern + '"' : ''}${effectiveValidation.errorMessage ? ' data-error-message="' + effectiveValidation.errorMessage + '"' : ''}`;
+
+                    switch (field.type) {
+                        case 'textarea':
+                            fieldHTML = `<div class="${gridClass} mb-3">
+    <label for="${field.id}" class="form-label">${field.label}${field.required ? ' *' : ''}</label>
+    <textarea class="form-control" id="${field.id}" name="${field.id}" rows="${field.rows}" ${commonAttrs}></textarea>
+    ${field.helpText ? '<small class="form-text text-muted">' + field.helpText + '</small>' : ''}
+    ${effectiveValidation.errorMessage ? '<div class="invalid-feedback">' + effectiveValidation.errorMessage + '</div>' : ''}
+</div>`;
+                            break;
+                        case 'select':
+                            const selectOptions = field.options.map(opt => 
+                                `<option value="${opt.value}">${opt.label}</option>`
+                            ).join('\n        ');
+                            fieldHTML = `<div class="${gridClass} mb-3">
+    <label for="${field.id}" class="form-label">${field.label}${field.required ? ' *' : ''}</label>
+    <select class="form-select" id="${field.id}" name="${field.id}" ${commonAttrs}>
+        ${selectOptions}
+    </select>
+    ${field.helpText ? '<small class="form-text text-muted">' + field.helpText + '</small>' : ''}
+    ${effectiveValidation.errorMessage ? '<div class="invalid-feedback">' + effectiveValidation.errorMessage + '</div>' : ''}
+</div>`;
+                            break;
+                        case 'radio':
+                            const radioOptions = field.options.map(opt => 
+                                `<div class="form-check">
+        <input class="form-check-input" type="radio" name="${field.id}" value="${opt.value}" id="${opt.value}" ${commonAttrs}>
+        <label class="form-check-label" for="${opt.value}">${opt.label}</label>
+    </div>`
+                            ).join('\n');
+                            fieldHTML = `<div class="${gridClass} mb-3">
+    <fieldset>
+        <legend class="form-label">${field.label}${field.required ? ' *' : ''}</legend>
+        ${radioOptions}
+    </fieldset>
+    ${field.helpText ? '<small class="form-text text-muted">' + field.helpText + '</small>' : ''}
+    ${effectiveValidation.errorMessage ? '<div class="invalid-feedback">' + effectiveValidation.errorMessage + '</div>' : ''}
+</div>`;
+                            break;
+                        case 'checkbox':
+                            const checkboxOptions = field.options.map(opt => 
+                                `<div class="form-check">
+        <input class="form-check-input" type="checkbox" name="${field.id}[]" value="${opt.value}" id="${opt.value}" ${commonAttrs}>
+        <label class="form-check-label" for="${opt.value}">${opt.label}</label>
+    </div>`
+                            ).join('\n');
+                            fieldHTML = `<div class="${gridClass} mb-3">
+    <fieldset>
+        <legend class="form-label">${field.label}${field.required ? ' *' : ''}</legend>
+        ${checkboxOptions}
+    </fieldset>
+    ${field.helpText ? '<small class="form-text text-muted">' + field.helpText + '</small>' : ''}
+    ${effectiveValidation.errorMessage ? '<div class="invalid-feedback">' + effectiveValidation.errorMessage + '</div>' : ''}
+</div>`;
+                            break;
+                        default:
+                            fieldHTML = `<div class="${gridClass} mb-3">
+    <label for="${field.id}" class="form-label">${field.label}${field.required ? ' *' : ''}</label>
+    <input type="${field.type}" class="form-control" id="${field.id}" name="${field.id}" ${commonAttrs}>
+    ${field.helpText ? '<small class="form-text text-muted">' + field.helpText + '</small>' : ''}
+    ${effectiveValidation.errorMessage ? '<div class="invalid-feedback">' + effectiveValidation.errorMessage + '</div>' : ''}
+</div>`;
+                    }
+                    return fieldHTML;
+                }).join('\n');
+
+                return `<form id="generated-form" data-title="${$('#formTitle').val()}" data-description="${$('#formDescription').val()}" style="background-color: ${designSettings.formBackgroundColor}; padding: 20px; border-radius: 8px;">
+    <h2>${$('#formTitle').val()}</h2>
+    <p>${$('#formDescription').val()}</p>
+    <div class="row">
+        ${fieldsHTML}
+    </div>
+    <button type="submit" class="btn btn-primary" style="background-color: ${designSettings.buttonColor}; border-color: ${designSettings.buttonColor}">${designSettings.buttonText}</button>
+</form>`;
+            }
+
+            function generateJSON() {
+                const tableColumns = fields.map(field => ({
+                    field: field.id,
+                    header: field.label
+                }));
+                tableColumns.push({ field: 'timestamp', header: 'Date Added' });
+
+                const formattedFields = fields.map(field => {
+                    const formattedField = {
+                        id: field.id,
+                        label: field.label,
+                        type: field.type,
+                        required: field.required,
+                        helpText: field.helpText
+                    };
+                    if (field.placeholder) formattedField.placeholder = field.placeholder;
+                    const effectiveValidation = field.validation.pattern ? field.validation : (defaultValidations[field.type] || { pattern: '', errorMessage: '' });
+                    if (effectiveValidation.pattern || effectiveValidation.errorMessage) {
+                        formattedField.validation = {
+                            pattern: effectiveValidation.pattern,
+                            errorMessage: effectiveValidation.errorMessage
+                        };
+                    }
+                    if (field.rows) formattedField.rows = parseInt(field.rows);
+                    if (['select', 'radio', 'checkbox'].includes(field.type)) {
+                        formattedField.options = field.options;
+                    }
+                    return formattedField;
+                });
+
+                return {
+                    formTitle: $('#formTitle').val(),
+                    formDescription: $('#formDescription').val(),
+                    fields: formattedFields,
+                    tableColumns,
+                    designSettings
+                };
+            }
+
+            function getJavaScriptCode() {
+                return `function generateFormSchemaFromUI(formElement) {
+    const fields = [];
+    const tableColumns = [];
+    const inputs = formElement.querySelectorAll('[data-field]');
+    const defaultValidations = {
+        text: {
+            pattern: '^[a-zA-Z0-9\\\\s]+$',
+            errorMessage: 'برجاء إدخال أحرف أو أرقام أو مسافات فقط'
+        },
+        email: {
+            pattern: '^[\\\\w-\\\\.]+@([\\\\w-]+\\\\.)+[\\\\w-]{2,4}$',
+            errorMessage: 'برجاء إدخال بريد إلكتروني صالح'
+        },
+        number: {
+            pattern: '^-?\\\\d*\\\\.?\\\\d+$',
+            errorMessage: 'برجاء إدخال رقم صالح'
+        },
+        password: {
+            pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\\\d)[a-zA-Z\\\\d]{8,}$',
+            errorMessage: 'يجب أن تكون كلمة المرور مكونة من 8 أحرف على الأقل مع وجود حرف كبير وحرف صغير ورقم'
+        }
+    };
+    
+    inputs.forEach(input => {
+        const type = input.dataset.type || input.type;
+        const id = input.dataset.field;
+        const label = input.dataset.label || id;
+        
+        const field = {
+            id,
+            label,
+            type,
+            required: input.required || false,
+            helpText: input.dataset.helpText || ''
+        };
+        
+        if (input.placeholder) field.placeholder = input.placeholder;
+        const effectiveValidation = input.pattern || input.dataset.errorMessage ? 
+            { pattern: input.pattern || '', errorMessage: input.dataset.errorMessage || '' } : 
+            (defaultValidations[type] || { pattern: '', errorMessage: '' });
+        if (effectiveValidation.pattern || effectiveValidation.errorMessage) {
+            field.validation = {
+                pattern: effectiveValidation.pattern,
+                errorMessage: effectiveValidation.errorMessage
+            };
+        }
+        if (type === 'radio' || type === 'checkbox') {
+            const options = [];
+            const groupName = input.name;
+            const groupInputs = formElement.querySelectorAll('[name="' + groupName + '"]');
+            groupInputs.forEach(opt => {
+                options.push({
+                    value: opt.value,
+                    label: opt.dataset.label || opt.value
+                });
+            });
+            field.options = options;
+        }
+        if (type === 'select') {
+            const options = [];
+            input.querySelectorAll('option').forEach(opt => {
+                options.push({
+                    value: opt.value,
+                    label: opt.textContent
+                });
+            });
+            field.options = options;
+        }
+        if (type === 'textarea') {
+            field.rows = input.rows || 3;
+        }
+        fields.push(field);
+        tableColumns.push({ field: id, header: label });
+    });
+    
+    tableColumns.push({ field: 'timestamp', header: 'Date Added' });
+    
+    return {
+        formTitle: formElement.dataset.title || 'Generated Form',
+        formDescription: formElement.dataset.description || 'Fill in the form below.',
+        fields,
+        tableColumns,
+        designSettings: {
+            formBackgroundColor: formElement.style.backgroundColor || '#ffffff',
+            buttonColor: formElement.querySelector('button[type="submit"]').style.backgroundColor || '#007bff',
+            buttonText: formElement.querySelector('button[type="submit"]').textContent || 'Submit',
+            gridLayout: formElement.querySelector('.col-md-4') ? 'triple' : formElement.querySelector('.col-md-6') ? 'double' : 'single'
+        }
+    };
+}`;
+            }
+
+            function updatePreview() {
+                if (!validateForm()) return;
+                const $preview = $('#previewForm').empty();
+                const html = generateFormHTML();
+                $preview.html(html);
+                $preview.find('input, select, textarea').prop('disabled', true);
+                if (fields.length === 0) {
+                    $preview.html('<div class="text-center py-5 text-muted">لا توجد حقول للمعاينة</div>');
+                }
+            }
+
+            function updateCodeTabs() {
+                if (!validateForm()) return;
+                $('#htmlCode').text(generateFormHTML());
+                $('#jsonCode').text(JSON.stringify(generateJSON(), null, 2));
+                $('#jsCode').text(getJavaScriptCode());
+            }
+
+            // Event Handlers
+            $('#fieldList').on('change', '.field-label', function() {
+                const $card = $(this).closest('.field-card');
+                const field = $card.data('field');
+                if (validateInput($(this))) {
+                    field.label = $(this).val();
+                    updatePreview();
+                    updateCodeTabs();
+                }
+            });
+
+            $('#fieldList').on('change', '.field-type', function() {
+                const $card = $(this).closest('.field-card');
+                const field = $card.data('field');
+                const newType = $(this).val();
+                field.type = newType;
+                field.options = field.options || [];
+                const defaultValidation = defaultValidations[newType] || { pattern: '', errorMessage: '' };
+                field.validation = {
+                    pattern: field.validation.pattern || defaultValidation.pattern,
+                    errorMessage: field.validation.errorMessage || defaultValidation.errorMessage
+                };
+                $card.find('.field-pattern').val(field.validation.pattern);
+                $card.find('.field-error-message').val(field.validation.errorMessage);
+                updateFieldOptions($card, field.type);
+                updatePreview();
+                updateCodeTabs();
+            });
+
+            $('#fieldList').on('change', '.field-placeholder', function() {
+                const $card = $(this).closest('.field-card');
+                const field = $card.data('field');
+                if (validateInput($(this))) {
+                    field.placeholder = $(this).val();
+                    updatePreview();
+                    updateCodeTabs();
+                }
+            });
+
+            $('#fieldList').on('change', '.field-help-text', function() {
+                const $card = $(this).closest('.field-card');
+                const field = $card.data('field');
+                if (validateInput($(this))) {
+                    field.helpText = $(this).val();
+                    updatePreview();
+                    updateCodeTabs();
+                }
+            });
+
+            $('#fieldList').on('change', '.field-pattern', function() {
+                const $card = $(this).closest('.field-card');
+                const field = $card.data('field');
+                if (validateInput($(this))) {
+                    field.validation.pattern = $(this).val();
+                    updatePreview();
+                    updateCodeTabs();
+                }
+            });
+
+            $('#fieldList').on('change', '.field-error-message', function() {
+                const $card = $(this).closest('.field-card');
+                const field = $card.data('field');
+                if (validateInput($(this))) {
+                    field.validation.errorMessage = $(this).val();
+                    updatePreview();
+                    updateCodeTabs();
+                }
+            });
+
+            $('#fieldList').on('change', '.field-required', function() {
+                const $card = $(this).closest('.field-card');
+                const field = $card.data('field');
+                field.required = $(this).prop('checked');
+                updatePreview();
+                updateCodeTabs();
+            });
+
+            $('#fieldList').on('change', '.field-rows', function() {
+                const $card = $(this).closest('.field-card');
+                const field = $card.data('field');
+                if (validateInput($(this))) {
+                    field.rows = $(this).val();
+                    updatePreview();
+                    updateCodeTabs();
+                }
+            });
+
+            $('#fieldList').on('click', '.btn-add-option', function() {
+                const $card = $(this).closest('.field-card');
+                const field = $card.data('field');
+                addOption($card, field);
+                updatePreview();
+                updateCodeTabs();
+            });
+
+            $('#fieldList').on('change', '.option-value', function() {
+                const $card = $(this).closest('.field-card');
+                const field = $card.data('field');
+                const index = $(this).closest('.d-flex').index();
+                if (validateInput($(this))) {
+                    field.options[index].value = $(this).val();
+                    updatePreview();
+                    updateCodeTabs();
+                }
+            });
+
+            $('#fieldList').on('change', '.option-label', function() {
+                const $card = $(this).closest('.field-card');
+                const field = $card.data('field');
+                const index = $(this).closest('.d-flex').index();
+                if (validateInput($(this))) {
+                    field.options[index].label = $(this).val();
+                    updatePreview();
+                    updateCodeTabs();
+                }
+            });
+
+            $('#fieldList').on('click', '.btn-delete-option', function() {
+                const $card = $(this).closest('.field-card');
+                const field = $card.data('field');
+                const index = $(this).closest('.d-flex').index();
+                field.options.splice(index, 1);
+                $(this).closest('.d-flex').remove();
+                updatePreview();
+                updateCodeTabs();
+            });
+
+            $('#fieldList').on('click', '.btn-delete-field', function() {
+                const $card = $(this).closest('.field-card');
+                const index = $('#fieldList .field-card').index($card);
+                fields.splice(index, 1);
+                $card.remove();
+                updateFieldIndexes();
+                updatePreview();
+                updateCodeTabs();
+            });
+
+            $('#fieldList').on('click', '.btn-toggle-options', function() {
+                const $card = $(this).closest('.field-card');
+                toggleFieldOptions($card);
+            });
+
+            $('#formTitle, #formDescription, #buttonText').on('input', function() {
+                if (validateInput($(this))) {
+                    designSettings.buttonText = $('#buttonText').val();
+                    updatePreview();
+                    updateCodeTabs();
+                }
+            });
+
+            $('#formBackgroundColor, #buttonColor').on('input', function() {
+                designSettings.formBackgroundColor = $('#formBackgroundColor').val();
+                designSettings.buttonColor = $('#buttonColor').val();
+                updatePreview();
+                updateCodeTabs();
+            });
+
+            $('#gridLayout').on('change', function() {
+                designSettings.gridLayout = $(this).val();
+                updatePreview();
+                updateCodeTabs();
+            });
+
+            $('.btn-copy').click(function() {
+                const target = $(this).data('target');
+                const text = $(`#${target}`).text();
+                navigator.clipboard.writeText(text).then(() => {
+                    $(this).addClass('copied').text('تم النسخ');
+                    setTimeout(() => {
+                        $(this).removeClass('copied').text('نسخ');
+                    }, 2000);
+                });
+            });
+
+            $('.input-type-draggable').draggable({
+                helper: 'clone',
+                revert: 'invalid',
+                zIndex: 100,
+                cursor: 'grabbing',
+                opacity: 0.7
+            });
+
+            $('#fieldList').droppable({
+                accept: '.input-type-draggable',
+                drop: function(event, ui) {
+                    const type = ui.draggable.data('type');
+                    addField(type);
+                    $('#fieldList').sortable('refresh');
+                }
+            });
+
+            $('#fieldList').sortable({
+                placeholder: 'field-placeholder',
+                handle: '.field-card',
+                forcePlaceholderSize: true,
+                tolerance: 'pointer',
+                start: function(event, ui) {
+                    ui.placeholder.height(ui.item.outerHeight());
+                    ui.item.find('.field-options').addClass('collapsed');
+                    ui.item.find('.btn-toggle-options').addClass('collapsed');
+                },
+                stop: function(event, ui) {
+                    ui.item.find('.field-options').removeClass('collapsed');
+                    ui.item.find('.btn-toggle-options').removeClass('collapsed');
+                },
+                update: function(event, ui) {
+                    const newOrder = $(this).sortable('toArray', { attribute: 'data-id' });
+                    const newFields = [];
+                    newOrder.forEach(id => {
+                        const field = fields.find(f => f.id === id);
+                        if (field) newFields.push(field);
+                    });
+                    fields.length = 0;
+                    fields.push(...newFields);
+                    updateFieldIndexes();
+                    updatePreview();
+                    updateCodeTabs();
+                }
+            }).disableSelection();
+
+            $('#formTabs a').on('shown.bs.tab', function() {
+                if ($(this).attr('href') === '#preview') {
+                    updatePreview();
+                } else if ($(this).attr('href') === '#code') {
+                    updateCodeTabs();
+                }
+            });
+
+            $('head').append('<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">');
+            $('head').append('<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">');
+        });
+    </script>
+</body>
+</html>

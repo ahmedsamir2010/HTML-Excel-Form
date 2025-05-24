@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نموذج إدخال بيانات Excel</title>
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0iIzIxNzM0NiIgZD0iTTE0LDJIMWEyLDIgMCAwLDAtMiwydjE2YTIsMiAwIDAsMCwyLDJoMTRhMiwyIDAgMCwwLDItMlY0YTIsMiAwIDAsMC0yLTJabTAsMThIMVY0aDE0Wm0yLTEyaDVhMiwyIDAgMCwwLDItMlY1YTIsMiAwIDAsMC0yLTJoLTV2NVptMCw0aDVhMiwyIDAgMCwwLDItMnYtMWEyLDIgMCAwLDAtMi0yaC01djVabTAsNGg1YTIsMiAwIDAsMCwyLTJ2LTFhMiwyIDAgMCwwLTItMmgtNXY1Wk0zLDdoNHYySDNabTAsMy41aDEwdjJIM1ptMCwzLjVoMTB2MkgzWiIvPjwvc3ZnPg==" type="image/svg+xml">
+    <!-- Bootstrap CSS -->
+    <link href="./assets/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap RTL CSS -->
+    <link rel="stylesheet" href="./assets/bootstrap.rtl.min.css">
+    <!-- jQuery UI CSS -->
+    <link href="./assets/jqueryui.css" rel="stylesheet">
+    <!-- jQuery -->
+    <script src="./assets/JQuery.min.js"></script>
+    <!-- jQuery UI -->
+    <script src="./assets/jqueryui.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="./assets/bootstrap.bundle.min.js"></script>
+    <!-- SheetJS -->
+    <script src="./assets/xlsx.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Traditional Arabic', Arial, sans-serif;
+            min-height: 100vh;
+            padding: 2rem;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            background: #fff;
+        }
+        .card-body {
+            padding: 2rem;
+        }
+        .ui-button {
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .ui-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .input-error {
+            border-color: #dc3545 !important;
+        }
+        .input-error:focus {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+        }
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e9ecef;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #6c757d;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #495057;
+        }
+        textarea {
+            white-space: pre-line;
+            resize: vertical;
+        }
+        .form-label {
+            font-weight: 500;
+            color: #343a40;
+        }
+        .table {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .table th {
+            background: #e9ecef;
+            font-weight: 600;
+        }
+        .notification {
+            z-index: 1050;
+            max-width: 300px;
+        }
+        footer a {
+            color: #007bff;
+            transition: color 0.3s ease;
+        }
+        footer a:hover {
+            color: #0056b3;
+        }
+        .ui-dialog {
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        }
+        .ui-dialog-titlebar {
+            background: #007bff;
+            color: white;
+            border-radius: 10px 10px 0 0;
+        }
+        .form-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .form-grid .mb-3 {
+            flex: 1;
+            min-width: 0;
+        }
+        .grid-single .mb-3 {
+            flex: 0 0 100%;
+        }
+        .grid-double .mb-3 {
+            flex: 0 0 calc(50% - 0.5rem);
+        }
+        .grid-triple .mb-3 {
+            flex: 0 0 calc(33.33% - 0.67rem);
+        }
+        @media (max-width: 767.98px) {
+            .grid-double .mb-3,
+            .grid-triple .mb-3 {
+                flex: 0 0 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card shadow">
+            <div class="card-body">
+                <!-- Controls Section -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <span id="spreadsheet-status" class="badge bg-secondary rounded-pill">غير متصل</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button id="connect-btn" class="btn btn-outline-primary btn-sm ui-button">
+                            <i class="bi bi-link-45deg me-1"></i>الاتصال بجدول البيانات
+                        </button>
+                        <button id="form-settings-btn" class="btn btn-outline-secondary btn-sm ui-button" title="إعدادات النموذج">
+                            <i class="bi bi-gear-fill me-1"></i>إعدادات النموذج
+                        </button>
+                        <button id="toggle-theme-btn" class="btn btn-outline-secondary btn-sm rounded-circle ui-button" title="تبديل المظهر">
+                            <i class="bi bi-sun-fill"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Title Section -->
+                <h1 class="card-title h3 mb-3 text-primary" id="form-title">نموذج إدخال بيانات Excel</h1>
+
+                <!-- Form description -->
+                <p id="form-description-text" class="text-muted mb-4">
+                    يتيح لك هذا النموذج جمع وإدارة البيانات في جدول Excel. املأ الحقول المطلوبة المميزة بعلامة (*) وانقر على 'إضافة بيانات' لحفظ معلوماتك.
+                </p>
+
+                <!-- File location display -->
+                <div id="file-location-container" class="alert alert-success d-none mb-4">
+                    <i class="bi bi-file-earmark-spreadsheet me-2"></i>
+                    <strong>موقع الملف:</strong>
+                    <span id="file-location-path" class="font-monospace ms-2">لم يتم التحديد</span>
+                </div>
+
+                <!-- Form -->
+                <div class="mb-4 form-grid" id="form-fields-container">
+                    <!-- All fields will be inserted here dynamically -->
+                </div>
+
+                <!-- Form Actions -->
+                <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-4">
+                    <div class="d-flex gap-2">
+                        <button id="add-entry-btn" class="btn btn-primary ui-button">
+                            <i class="bi bi-plus-circle me-2"></i>إضافة بيانات
+                        </button>
+                        <button id="clear-form-btn" class="btn btn-outline-secondary ui-button">
+                            <i class="bi bi-trash me-2"></i>مسح النموذج
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search and Filter -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <h2 class="h5 mb-0">البيانات المدخلة</h2>
+                        <button id="toggle-entries-btn" class="btn btn-outline-secondary btn-sm ui-button">
+                            <i class="bi bi-eye me-1"></i>إخفاء البيانات
+                        </button>
+                    </div>
+                    <div class="position-relative">
+                        <input type="text" id="search-entries" class="form-control w-100 ps-5 ui-widget" placeholder="بحث في البيانات...">
+                        <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                    </div>
+                </div>
+
+                <!-- Entries Table -->
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <!-- Table headers will be populated dynamically based on form settings -->
+                            </tr>
+                        </thead>
+                        <tbody id="entries-body">
+                            <!-- Entries will be added here dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer with branding -->
+    <footer class="mt-4 text-center text-muted small">
+        <p class="d-flex flex-wrap justify-content-center gap-2">
+            <span>تم إنشاء النموذج بواسطة</span>
+            <a href="https://pythonandvba.com/go/no-code-excel-data-entry-form-generator" class="link text-decoration-underline" target="_blank" rel="noopener noreferrer">
+                <i class="bi bi-link-45deg me-1"></i>منشئ نماذج Excel
+            </a>
+            <a href="https://youtube.com/c/codingisfun" class="link text-decoration-underline" target="_blank" rel="noopener noreferrer">
+                <i class="bi bi-youtube me-1"></i>Coding Is Fun
+            </a>
+            <a href="https://pythonandvba.com/coffee-donation" class="link text-decoration-underline" target="_blank" rel="noopener noreferrer">
+                <i class="bi bi-cup-hot me-1"></i>Buy me a coffee
+            </a>
+            <span id="version-display">v1.0</span>
+        </p>
+    </footer>
+
+    <!-- Settings Dialog -->
+    <div id="settings-dialog" title="الإعدادات" style="display:none;">
+        <h6 class="mb-3">خيارات المظهر</h6>
+        <div class="mb-3">
+            <label for="theme-select" class="form-label">المظهر</label>
+            <select id="theme-select" class="form-select ui-widget">
+                <option value="light">فاتح</option>
+                <option value="dark">داكن</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Form Settings Editor Dialog -->
+    <div id="form-settings-dialog" title="محرر إعدادات النموذج" style="display:none;">
+        <p class="small mb-3">قم بتعديل JSON أدناه لتخصيص حقول النموذج ومظهره وتخطيطه. سيتم حفظ التغييرات في متصفحك.</p>
+        <div class="mb-3">
+            <textarea id="form-settings-json" class="form-control font-monospace ui-widget" rows="15" spellcheck="false"></textarea>
+        </div>
+        <button id="reset-settings-btn" class="btn btn-outline-secondary btn-sm ui-button">إعادة تعيين الإعدادات الافتراضية</button>
+    </div>
+
+    <script>
+        // App state
+        let entries = [];
+        let formSettings = null;
+        let excelFileHandle = null;
+        let connectedWorkbook = null;
+
+        // Default form settings
+        const defaultFormSettings = {
+            "formTitle": "نموذج إدخال بيانات Excel",
+            "formDescription": "املأ الحقول المطلوبة أدناه لإضافة البيانات إلى جدول Excel الخاص بك. يمكنك تخصيص هذه الحقول من خلال محرر إعدادات النموذج.",
+            "designSettings": {
+                "gridLayout": "double"
+            },
+            "fields": [
+                {
+                    "id": "name",
+                    "label": "الاسم الكامل",
+                    "type": "text",
+                    "placeholder": "أدخل اسمك الكامل",
+                    "required": true,
+                    "minLength": 2,
+                    "maxLength": 100,
+                    "helpText": "أدخل اسمك الأول والأخير كما يظهر في هويتك.",
+                    "validation": {
+                        "errorMessage": "يجب أن يكون الاسم على الأقل حرفين"
+                    }
+                },
+                {
+                    "id": "email",
+                    "label": "البريد الإلكتروني",
+                    "type": "email",
+                    "placeholder": "your.name@company.com",
+                    "required": true,
+                    "helpText": "عنوان بريدك الإلكتروني الرئيسي للمراسلات.",
+                    "validation": {
+                        "pattern": "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$",
+                        "errorMessage": "الرجاء إدخال بريد إلكتروني صحيح"
+                    }
+                },
+                {
+                    "id": "phone",
+                    "label": "رقم الهاتف",
+                    "type": "text",
+                    "inputmode": "numeric",
+                    "pattern": "[0-9]*",
+                    "placeholder": "أدخل رقم هاتفك",
+                    "required": false,
+                    "helpText": "رقم هاتفك للتواصل بدون مسافات أو رموز خاصة.",
+                    "validation": {
+                        "errorMessage": "الرجاء إدخال أرقام فقط"
+                    }
+                },
+                {
+                    "id": "dob",
+                    "label": "تاريخ الميلاد",
+                    "type": "date",
+                    "required": false,
+                    "helpText": "اختر تاريخ ميلادك من التقويم."
+                },
+                {
+                    "id": "department",
+                    "label": "القسم",
+                    "type": "select",
+                    "required": true,
+                    "helpText": "اختر القسم الذي تنتمي إليه أو تعمل معه.",
+                    "options": [
+                        { "value": "", "label": "اختر قسماً", "disabled": true, "selected": true },
+                        { "value": "engineering", "label": "الهندسة" },
+                        { "value": "marketing", "label": "التسويق" },
+                        { "value": "sales", "label": "المبيعات" },
+                        { "value": "hr", "label": "الموارد البشرية" },
+                        { "value": "finance", "label": "المالية" }
+                    ]
+                },
+                {
+                    "id": "employmentType",
+                    "label": "نوع التوظيف",
+                    "type": "radio",
+                    "options": [
+                        { "value": "full-time", "label": "دوام كامل", "checked": true },
+                        { "value": "part-time", "label": "دوام جزئي" },
+                        { "value": "contract", "label": "عقد" },
+                        { "value": "intern", "label": "تدريب" }
+                    ],
+                    "required": true,
+                    "helpText": "اختر حالة توظيفك أو نوع عقدك.",
+                    "validation": {
+                        "errorMessage": "الرجاء اختيار نوع التوظيف"
+                    }
+                },
+                {
+                    "id": "skills",
+                    "label": "المهارات",
+                    "type": "checkbox",
+                    "options": [
+                        { "value": "programming", "label": "برمجة", "id": "skill-programming" },
+                        { "value": "design", "label": "تصميم", "id": "skill-design" },
+                        { "value": "communication", "label": "تواصل", "id": "skill-communication" },
+                        { "value": "leadership", "label": "قيادة", "id": "skill-leadership" },
+                        { "value": "project-management", "label": "إدارة المشاريع", "id": "skill-project-management" }
+                    ],
+                    "required": false,
+                    "helpText": "اختر جميع المهارات التي تنطبق على دورك أو خبرتك."
+                },
+                {
+                    "id": "bio",
+                    "label": "السيرة المهنية",
+                    "type": "textarea",
+                    "placeholder": "حدثنا عن خلفيتك المهنية...",
+                    "rows": 4,
+                    "required": false,
+                    "helpText": "وصف موجز لخلفيتك المهنية وخبراتك."
+                },
+                {
+                    "id": "comments",
+                    "label": "ملاحظات إضافية",
+                    "type": "textarea",
+                    "placeholder": "أي معلومات إضافية تود مشاركتها...",
+                    "rows": 3,
+                    "required": false,
+                    "helpText": "مساحة اختيارية لأي معلومات أخرى ذات صلة."
+                }
+            ],
+            "tableColumns": [
+                { "field": "name", "header": "الاسم" },
+                { "field": "email", "header": "البريد الإلكتروني" },
+                { "field": "phone", "header": "الهاتف" },
+                { "field": "dob", "header": "تاريخ الميلاد" },
+                { "field": "department", "header": "القسم" },
+                { "field": "employmentType", "header": "نوع التوظيف" },
+                { "field": "skills", "header": "المهارات" },
+                { "field": "bio", "header": "السيرة المهنية" },
+                { "field": "comments", "header": "ملاحظات" },
+                { "field": "timestamp", "header": "تاريخ الإضافة" }
+            ]
+        };
+
+        // jQuery Document Ready
+        $(document).ready(function() {
+            // Apply theme
+            $('html').attr('data-bs-theme', 'light');
+
+            // Initialize jQuery UI widgets
+            $('.ui-button').button();
+            $('#search-entries').autocomplete({
+                source: [], // Can be enhanced with dynamic suggestions
+                minLength: 2
+            });
+            $('input[type="date"]').datepicker({
+                dateFormat: 'yy-mm-dd',
+                changeMonth: true,
+                changeYear: true,
+                yearRange: '1900:2100'
+            });
+
+            // Initialize dialogs
+            $('#settings-dialog').dialog({
+                autoOpen: false,
+                modal: true,
+                width: 400,
+                buttons: {
+                    "حفظ الإعدادات": saveSettings,
+                    إلغاء: function() { $(this).dialog('close'); }
+                }
+            });
+            $('#form-settings-dialog').dialog({
+                autoOpen: false,
+                modal: true,
+                width: 800,
+                buttons: {
+                    "تطبيق التغييرات": applyFormSettings,
+                    إلغاء: function() { $(this).dialog('close'); }
+                }
+            });
+
+            // Load form settings and generate form fields
+            formSettings = loadFormSettings();
+            if (formSettings) {
+                generateFormFields(formSettings);
+            }
+
+            // Update status badge
+            updateStatusBadge();
+
+            // Update spreadsheet status
+            updateSpreadsheetStatus();
+
+            // Focus on first input
+            $('input[type="text"], input[type="email"]').first().focus();
+
+            // Event Handlers
+            $('#connect-btn').on('click', connectToSpreadsheet);
+            $('#form-settings-btn').on('click', openFormSettingsEditor);
+            $('#toggle-theme-btn').on('click', toggleTheme);
+            $('#add-entry-btn').on('click', addEntry);
+            $('#clear-form-btn').on('click', clearForm);
+            $('#reset-settings-btn').on('click', resetFormSettings);
+            $('#toggle-entries-btn').on('click', toggleEntriesVisibility);
+            $('#search-entries').on('input', updateTable);
+        });
+
+        // Load form settings
+        function loadFormSettings() {
+            try {
+                const savedSettings = localStorage.getItem('formSettings');
+                if (savedSettings) {
+                    return JSON.parse(savedSettings);
+                }
+                formSettings = defaultFormSettings;
+                return formSettings;
+            } catch (error) {
+                console.error('Error loading form settings:', error);
+                showNotification('Error loading form settings', 'danger');
+                return null;
+            }
+        }
+
+        // Save form settings
+        function saveFormSettings(settings) {
+            try {
+                localStorage.setItem('formSettings', JSON.stringify(settings));
+                return true;
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                showNotification('Error saving settings', 'danger');
+                return false;
+            }
+        }
+
+        // Default settings
+        const defaultSettings = {
+            theme: 'light',
+            entriesVisible: true
+        };
+
+        // Toggle theme
+        function toggleTheme() {
+            const currentTheme = $('html').attr('data-bs-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            $('html').attr('data-bs-theme', newTheme);
+            defaultSettings.theme = newTheme;
+            $('#toggle-theme-btn').html(`<i class="bi bi-${newTheme === 'light' ? 'sun-fill' : 'moon-fill'}"></i>`).button('refresh');
+            showNotification(`تم تبديل المظهر إلى وضع ${newTheme}`, 'success');
+        }
+
+        // Toggle entries visibility
+        function toggleEntriesVisibility() {
+            const $table = $('.table-responsive');
+            if (defaultSettings.entriesVisible) {
+                $table.slideUp();
+                $('#toggle-entries-btn').html('<i class="bi bi-eye-slash me-1"></i>عرض البيانات').button('refresh');
+                defaultSettings.entriesVisible = false;
+            } else {
+                $table.slideDown();
+                $('#toggle-entries-btn').html('<i class="bi bi-eye me-1"></i>إخفاء البيانات').button('refresh');
+                defaultSettings.entriesVisible = true;
+            }
+        }
+
+        // Save settings
+        function saveSettings() {
+            const theme = $('#theme-select').val() || 'light';
+            $('html').attr('data-bs-theme', theme);
+            defaultSettings.theme = theme;
+            showNotification('تم حفظ الإعدادات بنجاح', 'success');
+            $('#settings-dialog').dialog('close');
+        }
+
+        // Open form settings editor
+        function openFormSettingsEditor() {
+            $('#form-settings-json').val(JSON.stringify(formSettings, null, 2));
+            $('#form-settings-dialog').dialog('open');
+        }
+
+        // Apply form settings
+        function applyFormSettings() {
+            try {
+                const settingsJson = $('#form-settings-json').val();
+                const newSettings = JSON.parse(settingsJson);
+                if (!newSettings || !newSettings.fields || !Array.isArray(newSettings.fields)) {
+                    throw new Error('Invalid settings format. Settings must include a fields array.');
+                }
+                // Validate gridLayout
+                if (newSettings.designSettings && newSettings.designSettings.gridLayout &&
+                    !['single', 'double', 'triple'].includes(newSettings.designSettings.gridLayout)) {
+                    throw new Error('Invalid gridLayout value. Must be "single", "double", or "triple".');
+                }
+                formSettings = newSettings;
+                saveFormSettings(formSettings);
+                generateFormFields(formSettings);
+                $('#form-settings-dialog').dialog('close');
+                showNotification('تم تطبيق إعدادات النموذج بنجاح', 'success');
+            } catch (error) {
+                console.error('Error applying form settings:', error);
+                showNotification(`Error applying settings: ${error.message}`, 'danger');
+            }
+        }
+
+        // Reset form settings
+        function resetFormSettings() {
+            if (confirm('هل أنت متأكد أنك تريد إعادة تعيين الإعدادات إلى الافتراضي؟ سيؤدي ذلك إلى إزالة أي تخصيصات.')) {
+                formSettings = JSON.parse(JSON.stringify(defaultFormSettings));
+                $('#form-settings-json').val(JSON.stringify(formSettings, null, 2));
+                showNotification('تمت إعادة تعيين الإعدادات إلى الافتراضي', 'info');
+            }
+        }
+
+        // Update status badge
+        function updateStatusBadge() {
+            const $badge = $('#spreadsheet-status');
+            $badge.text(entries.length > 0 ? `${entries.length} entries` : 'No entries')
+                  .toggleClass('bg-secondary', entries.length === 0)
+                  .toggleClass('bg-primary', entries.length > 0);
+        }
+
+        // Generate form fields
+        function generateFormFields(settings) {
+            if (!settings || !settings.fields) {
+                console.error('Invalid form settings');
+                return;
+            }
+
+            $('#form-title').text(settings.formTitle || 'Excel Entry Form').fadeIn();
+            document.title = settings.formTitle || 'Excel Entry Form';
+            $('#form-description-text').text(settings.formDescription || '');
+
+            const $container = $('#form-fields-container').empty();
+            const gridLayout = settings.designSettings?.gridLayout || 'single';
+            $container.addClass(`grid-${gridLayout}`);
+
+            settings.fields.forEach(field => {
+                switch (field.type) {
+                    case 'text':
+                    case 'email':
+                    case 'tel':
+                    case 'date':
+                    case 'number':
+                    case 'textarea':
+                        createInputField($container, field);
+                        break;
+                    case 'select':
+                        createSelectField($container, field);
+                        break;
+                    case 'radio':
+                        createRadioField($container, field);
+                        break;
+                    case 'checkbox':
+                        createCheckboxField($container, field);
+                        break;
+                }
+            });
+
+            if (settings.tableColumns && settings.tableColumns.length > 0) {
+                const $thead = $('table thead tr').empty();
+                settings.tableColumns.forEach(column => {
+                    $thead.append(`<th scope="col">${column.header}</th>`);
+                });
+                $thead.append('<th scope="col">الإجراءات</th>');
+            }
+
+            // Reapply datepicker to dynamically added date fields
+            $('input[type="date"]').datepicker({
+                dateFormat: 'yy-mm-dd',
+                changeMonth: true,
+                changeYear: true,
+                yearRange: '1900:2100'
+            });
+        }
+
+        // Create input field
+        function createInputField($container, field) {
+            const $formGroup = $('<div>').addClass('mb-3');
+            const $label = $('<label>').addClass('form-label')
+                .html(`${field.label}${field.required ? ' <span class="text-danger">*</span>' : ''}`);
+
+            let $input;
+            if (field.type === 'textarea') {
+                $input = $('<textarea>').addClass('form-control ui-widget')
+                    .attr({ id: field.id, rows: field.rows || 4 });
+            } else {
+                $input = $('<input>').addClass('form-control ui-widget')
+                    .attr({
+                        type: field.type === 'number' ? 'text' : field.type,
+                        id: field.id,
+                        inputmode: field.inputmode,
+                        pattern: field.pattern,
+                        placeholder: field.placeholder,
+                        required: field.required,
+                        minlength: field.minLength,
+                        maxlength: field.maxLength,
+                        min: field.min,
+                        max: field.max
+                    });
+            }
+
+            if (field.type === 'email') {
+                $input.on('input', function() { validateEmail(this); });
+            } else if (field.type === 'number' || field.inputmode === 'numeric') {
+                $input.on('input', function() { validateNumericText(this); });
+            } else if (field.required) {
+                $input.on('input', function() { validateField(this); });
+            }
+
+            const $error = field.validation ? $('<div>').addClass('invalid-feedback')
+                .attr('id', `${field.id}-error`)
+                .text(field.validation.errorMessage) : null;
+
+            $formGroup.append($label, $input);
+            if (field.helpText) {
+                $formGroup.append($('<small>').addClass('form-text text-muted').text(field.helpText));
+            }
+            if ($error) $formGroup.append($error);
+            $container.append($formGroup);
+        }
+
+        // Create select field
+        function createSelectField($container, field) {
+            const $formGroup = $('<div>').addClass('mb-3');
+            const $label = $('<label>').addClass('form-label')
+                .html(`${field.label}${field.required ? ' <span class="text-danger">*</span>' : ''}`);
+            const $select = $('<select>').addClass('form-select ui-widget')
+                .attr({ id: field.id, required: field.required });
+
+            if (field.options) {
+                field.options.forEach(option => {
+                    $select.append($('<option>').val(option.value)
+                        .text(option.label)
+                        .prop('disabled', option.disabled)
+                        .prop('selected', option.selected));
+                });
+            }
+
+            $formGroup.append($label, $select);
+            if (field.helpText) {
+                $formGroup.append($('<small>').addClass('form-text text-muted').text(field.helpText));
+            }
+            $container.append($formGroup);
+        }
+
+        // Create radio field
+        function createRadioField($container, field) {
+            const $formGroup = $('<div>').addClass('mb-3');
+            const $label = $('<label>').addClass('form-label')
+                .html(`${field.label}${field.required ? ' <span class="text-danger">*</span>' : ''}`);
+            const $optionsContainer = $('<div>').addClass('d-flex flex-column gap-2');
+
+            if (field.options) {
+                field.options.forEach(option => {
+                    const $optionLabel = $('<label>').addClass('form-check-label');
+                    const $radio = $('<input>').addClass('form-check-input')
+                        .attr({ type: 'radio', name: field.id, value: option.value })
+                        .prop('checked', option.checked);
+                    $optionLabel.append($radio, ` ${option.label}`);
+                    $optionsContainer.append($('<div>').addClass('form-check').append($optionLabel));
+                });
+            }
+
+            $formGroup.append($label, $optionsContainer);
+            if (field.helpText) {
+                $formGroup.append($('<small>').addClass('form-text text-muted').text(field.helpText));
+            }
+            $container.append($formGroup);
+        }
+
+        // Create checkbox field
+        function createCheckboxField($container, field) {
+            const $formGroup = $('<div>').addClass('mb-3');
+            const $label = $('<label>').addClass('form-label')
+                .html(`${field.label}${field.required ? ' <span class="text-danger">*</span>' : ''}`);
+            const $optionsContainer = $('<div>').addClass('d-flex flex-column gap-2');
+
+            if (field.options) {
+                field.options.forEach(option => {
+                    const $optionLabel = $('<label>').addClass('form-check-label');
+                    const $checkbox = $('<input>').addClass('form-check-input')
+                        .attr({ type: 'checkbox', id: option.id || `${field.id}-${option.value}` })
+                        .prop('checked', option.checked);
+                    $optionLabel.append($checkbox, ` ${option.label}`);
+                    $optionsContainer.append($('<div>').addClass('form-check').append($optionLabel));
+                });
+            }
+
+            $formGroup.append($label, $optionsContainer);
+            if (field.helpText) {
+                $formGroup.append($('<small>').addClass('form-text text-muted').text(field.helpText));
+            }
+            $container.append($formGroup);
+        }
+
+        // Validate field
+        function validateField(field) {
+            const $error = $(`#${field.id}-error`);
+            if (!$error.length) return;
+
+            if (field.validity.valueMissing) {
+                $error.text('هذا الحقل مطلوب').show();
+                $(field).addClass('input-error');
+            } else if (field.validity.tooShort) {
+                $error.text(`يجب أن يكون على الأقل ${field.minLength} حروف`).show();
+                $(field).addClass('input-error');
+            } else {
+                $error.hide();
+                $(field).removeClass('input-error');
+            }
+        }
+
+        // Validate email
+        function validateEmail(field) {
+            const $error = $(`#${field.id}-error`);
+            if (!$error.length) return true;
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (field.validity.valueMissing) {
+                $error.text('البريد الإلكتروني مطلوب').show();
+                $(field).addClass('input-error');
+                return false;
+            } else if (!emailRegex.test(field.value)) {
+                $error.text('الرجاء إدخال بريد إلكتروني صحيح').show();
+                $(field).addClass('input-error');
+                return false;
+            } else {
+                $error.hide();
+                $(field).removeClass('input-error');
+                return true;
+            }
+        }
+
+        // Validate numeric text
+        function validateNumericText(field) {
+            const $error = $(`#${field.id}-error`);
+            if (!$error.length) return true;
+
+            const value = field.value.trim();
+            const numericValue = value.replace(/[^0-9]/g, '');
+            if (value !== numericValue) {
+                field.value = numericValue;
+            }
+
+            if (field.validity.valueMissing) {
+                $error.text('هذا الحقل مطلوب').show();
+                $(field).addClass('input-error');
+                return false;
+            } else if (field.validity.patternMismatch) {
+                $error.text('الرجاء إدخال أرقام فقط').show();
+                $(field).addClass('input-error');
+                return false;
+            } else {
+                $error.hide();
+                $(field).removeClass('input-error');
+                return true;
+            }
+        }
+
+        // Get form data
+        function getFormData() {
+            const formData = {};
+            formSettings.fields.forEach(field => {
+                switch (field.type) {
+                    case 'text':
+                    case 'email':
+                    case 'tel':
+                    case 'date':
+                    case 'number':
+                    case 'textarea':
+                        formData[field.id] = $(`#${field.id}`).val();
+                        break;
+                    case 'select':
+                        formData[field.id] = $(`#${field.id}`).val();
+                        break;
+                    case 'radio':
+                        formData[field.id] = $(`input[name="${field.id}"]:checked`).val() || '';
+                        break;
+                    case 'checkbox':
+                        const checkedValues = [];
+                        field.options.forEach(option => {
+                            if ($(`#${option.id || `${field.id}-${option.value}`}`).is(':checked')) {
+                                checkedValues.push(option.value || option.label);
+                            }
+                        });
+                        formData[field.id] = checkedValues;
+                        break;
+                }
+            });
+            return formData;
+        }
+
+        // Set form data
+        function setFormData(formData) {
+            if (!formData || !formSettings || !formSettings.fields) return;
+
+            formSettings.fields.forEach(field => {
+                if (formData[field.id] === undefined) return;
+
+                switch (field.type) {
+                    case 'text':
+                    case 'email':
+                    case 'tel':
+                    case 'date':
+                    case 'number':
+                    case 'textarea':
+                        $(`#${field.id}`).val(formData[field.id]);
+                        break;
+                    case 'select':
+                        $(`#${field.id}`).val(formData[field.id]);
+                        break;
+                    case 'radio':
+                        $(`input[name="${field.id}"][value="${formData[field.id]}"]`).prop('checked', true);
+                        break;
+                    case 'checkbox':
+                        let values = Array.isArray(formData[field.id]) ? formData[field.id] : String(formData[field.id]).split(',').map(v => v.trim());
+                        field.options.forEach(option => {
+                            const $checkbox = $(`#${option.id || `${field.id}-${option.value}`}`);
+                            $checkbox.prop('checked', values.includes(option.value) || values.includes(option.label));
+                        });
+                        break;
+                }
+            });
+        }
+
+        // Add entry
+        async function addEntry() {
+            let isValid = true;
+            formSettings.fields.forEach(field => {
+                if (field.required) {
+                    const $field = $(`#${field.id}`);
+                    if (field.type === 'text' || field.type === 'email' || field.type === 'tel' ||
+                        field.type === 'date' || field.type === 'number' || field.type === 'textarea') {
+                        if (!$field.val().trim()) {
+                            isValid = false;
+                            $field.addClass('input-error');
+                            $(`#${field.id}-error`).text(`${field.label} مطلوب`).show();
+                        }
+                    } else if (field.type === 'select') {
+                        if (!$field.val()) {
+                            isValid = false;
+                            $field.addClass('input-error');
+                        }
+                    } else if (field.type === 'radio') {
+                        if (!$(`input[name="${field.id}"]:checked`).length) {
+                            isValid = false;
+                        }
+                    }
+                }
+            });
+
+            if (!isValid) {
+                showNotification('الرجاء ملء جميع الحقول المطلوبة', 'danger');
+                return;
+            }
+
+            if (!excelFileHandle) {
+                showNotification('الرجاء تحديد مكان لحفظ ملف Excel الخاص بك', 'info');
+                const success = await createNewExcelFile();
+                if (!success) return;
+            }
+
+            const formData = getFormData();
+            formData.timestamp = formData.timestamp || new Date().toISOString();
+            entries.push(formData);
+            updateTable();
+            clearForm();
+            updateStatusBadge();
+            await saveEntriesToExcel();
+            showNotification('تمت إضافة البيانات بنجاح', 'success');
+        }
+
+        // Format table cell
+        function formatTableCell(value) {
+            if (value === null || value === undefined) return '-';
+            let str = String(value)
+                .replace(/&/g, '&')
+                .replace(/</g, '<')
+                .replace(/>/g, '>')
+                .replace(/"/g, '"')
+                .replace(/'/g, '\'');
+            if (typeof value === 'string' && value.includes('\n')) {
+                return `<div class="white-space-pre-line">${str.replace(/\n/g, '<br>')}</div>`;
+            }
+            return str;
+        }
+
+        // Update table
+        function updateTable() {
+            const searchTerm = $('#search-entries').val().toLowerCase();
+            const filteredEntries = entries.filter(entry => {
+                if (!searchTerm) return true;
+                return Object.values(entry).some(value => String(value).toLowerCase().includes(searchTerm));
+            });
+
+            const $tbody = $('#entries-body').empty();
+            if (filteredEntries.length === 0) {
+                const colSpan = formSettings?.tableColumns?.length + 1 || 12;
+                $tbody.append(`<tr><td colspan="${colSpan}" class="text-center py-4 text-muted">لا توجد بيانات مدخلة. حاول تعديل بحثك أو إضافة بيانات جديدة.</td></tr>`);
+                return;
+            }
+
+            filteredEntries.forEach((entry, index) => {
+                const $row = $('<tr>');
+                formSettings.tableColumns.forEach(column => {
+                    const $td = $('<td>').addClass('p-2 align-top');
+                    if (column.field === 'timestamp') {
+                        const date = entry.timestamp ? new Date(entry.timestamp).toLocaleString() : '-';
+                        $td.addClass('text-sm text-muted').html(formatTableCell(date));
+                    } else {
+                        $td.html(formatTableCell(entry[column.field]));
+                    }
+                    $row.append($td);
+                });
+                const $actions = $('<td>').addClass('p-2 align-top')
+                    .html(`
+                        <div class="d-flex gap-1">
+                            <button class="btn btn-outline-secondary btn-sm p-1 edit-entry ui-button" data-index="${index}" title="تعديل">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm p-1 delete-entry ui-button" data-index="${index}" title="حذف">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    `);
+                $row.append($actions);
+                $tbody.append($row);
+            });
+
+            $('.edit-entry').button().on('click', function() {
+                editEntry($(this).data('index'));
+            });
+            $('.delete-entry').button().on('click', function() {
+                deleteEntry($(this).data('index'));
+            });
+        }
+
+        // Edit entry
+        function editEntry(index) {
+            const entry = entries[index];
+            if (!entry) return;
+            setFormData(entry);
+            $('#add-entry-btn').text('تحديث البيانات')
+                .removeClass('btn-primary')
+                .addClass('btn-success')
+                .button('refresh')
+                .off('click')
+                .on('click', () => updateEntry(index));
+            if (!$('#cancel-edit-btn').length) {
+                const $cancelBtn = $('<button>').attr('id', 'cancel-edit-btn')
+                    .addClass('btn btn-outline-secondary ms-2 ui-button')
+                    .text('إلغاء')
+                    .on('click', () => {
+                        clearForm();
+                        $cancelBtn.remove();
+                    });
+                $('#add-entry-btn').after($cancelBtn);
+                $cancelBtn.button();
+            }
+            window.currentlyEditingIndex = index;
+            $('#form-fields-container')[0].scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Update entry
+        async function updateEntry(index) {
+            const formData = getFormData();
+            if (entries[index] && entries[index].timestamp) {
+                formData.timestamp = entries[index].timestamp;
+            }
+            entries[index] = formData;
+            updateTable();
+            updateStatusBadge();
+            clearForm();
+            showNotification('تم تحديث البيانات بنجاح', 'success');
+            if (excelFileHandle) {
+                await saveEntriesToExcel();
+            }
+        }
+
+        // Delete entry
+        async function deleteEntry(index) {
+            if (confirm('هل أنت متأكد أنك تريد حذف هذه البيانات؟')) {
+                entries.splice(index, 1);
+                updateTable();
+                updateStatusBadge();
+                showNotification('تم حذف البيانات بنجاح', 'success');
+                if (window.currentlyEditingIndex === index) {
+                    clearForm();
+                }
+                if (excelFileHandle) {
+                    await saveEntriesToExcel();
+                }
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            let $notification = $('#notification');
+            if (!$notification.length) {
+                $notification = $('<div>').attr('id', 'notification')
+                    .addClass('notification position-fixed bottom-0 end-0 m-3 p-3 rounded shadow')
+                    .css({ transition: 'opacity 0.3s', opacity: 0 })
+                    .appendTo('body');
+            }
+
+            $notification.text(message)
+                .removeClass('bg-success bg-danger bg-info bg-warning text-white text-dark')
+                .addClass(`bg-${type} ${type === 'warning' ? 'text-dark' : 'text-white'}`)
+                .css('opacity', 1);
+
+            setTimeout(() => {
+                $notification.css('opacity', 0);
+                setTimeout(() => $notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Clear form
+        function clearForm() {
+            formSettings.fields.forEach(field => {
+                switch (field.type) {
+                    case 'text':
+                    case 'email':
+                    case 'tel':
+                    case 'date':
+                    case 'number':
+                    case 'textarea':
+                        $(`#${field.id}`).val('');
+                        break;
+                    case 'select':
+                        $(`#${field.id}`).prop('selectedIndex', 0);
+                        break;
+                    case 'radio':
+                        const defaultOption = field.options.find(opt => opt.checked) || field.options[0];
+                        if (defaultOption) {
+                            $(`input[name="${field.id}"][value="${defaultOption.value}"]`).prop('checked', true);
+                        }
+                        break;
+                    case 'checkbox':
+                        field.options.forEach(option => {
+                            $(`#${option.id || `${field.id}-${option.value}`}`).prop('checked', false);
+                        });
+                        break;
+                }
+            });
+
+            if (window.currentlyEditingIndex !== undefined) {
+                delete window.currentlyEditingIndex;
+                $('#add-entry-btn').text('إضافة بيانات')
+                    .removeClass('btn-success')
+                    .addClass('btn-primary')
+                    .button('refresh')
+                    .off('click')
+                    .on('click', addEntry);
+                $('#cancel-edit-btn').remove();
+            }
+
+            $('input[type="text"], input[type="email"]').first().focus();
+        }
+
+        // Excel Functions
+        async function connectToSpreadsheet() {
+            try {
+                if (!('showOpenFilePicker' in window)) {
+                    showNotification('متصفحك لا يدعم واجهة برمجة تطبيقات نظام الملفات.', 'danger');
+                    return;
+                }
+
+                const [fileHandle] = await window.showOpenFilePicker({
+                    types: [
+                        {
+                            description: 'Excel Files',
+                            accept: {
+                                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+                                'application/vnd.ms-excel': ['.xls']
+                            }
+                        }
+                    ],
+                    multiple: false
+                });
+
+                const file = await fileHandle.getFile();
+                const arrayBuffer = await file.arrayBuffer();
+                const data = new Uint8Array(arrayBuffer);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+                    throw new Error('لا توجد أوراق عمل في ملف Excel');
+                }
+
+                excelFileHandle = fileHandle;
+                connectedWorkbook = workbook;
+                await loadDataFromWorkbook();
+                updateSpreadsheetStatus();
+                showNotification(`تم الاتصال بجدول البيانات: ${file.name}`, 'success');
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('Error connecting to spreadsheet:', error);
+                    showNotification(`Error connecting to spreadsheet: ${error.message}`, 'danger');
+                }
+            }
+        }
+
+        async function loadDataFromWorkbook() {
+            if (!connectedWorkbook) return;
+
+            try {
+                const firstSheet = connectedWorkbook.Sheets[connectedWorkbook.SheetNames[0]];
+                const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                if (jsonData.length === 0) {
+                    showNotification('لا توجد بيانات في جدول البيانات المتصل', 'warning');
+                    return;
+                }
+
+                const currentFormSettings = formSettings || loadFormSettings();
+                if (!currentFormSettings || !currentFormSettings.tableColumns || !currentFormSettings.fields) {
+                    showNotification('خطأ: إعدادات النموذج غير موجودة أو غير مكتملة', 'danger');
+                    return;
+                }
+
+                const headerToFieldMap = {};
+                currentFormSettings.tableColumns.forEach(column => {
+                    headerToFieldMap[column.header.toLowerCase()] = column.field;
+                });
+
+                const fieldTypes = {};
+                currentFormSettings.fields.forEach(field => {
+                    fieldTypes[field.id] = field.type;
+                });
+
+                let action = 'replace';
+                if (entries.length > 0) {
+                    action = confirm('هل تريد استبدال الإدخالات الحالية؟ انقر على "موافق" للاستبدال، أو "إلغاء" للإضافة.') ? 'replace' : 'append';
+                }
+
+                if (action === 'replace') {
+                    entries = [];
+                }
+
+                const importedEntries = jsonData.map(row => {
+                    const entry = { timestamp: new Date().toISOString() };
+                    Object.keys(row).forEach(excelHeader => {
+                        const fieldId = findMatchingFieldId(excelHeader, headerToFieldMap);
+                        if (!fieldId) return;
+                        let value = row[excelHeader];
+                        if (fieldId === 'timestamp' && value) {
+                            try {
+                                const date = new Date(value);
+                                if (!isNaN(date.getTime())) {
+                                    entry.timestamp = date.toISOString();
+                                }
+                            } catch (e) {}
+                        } else if (fieldTypes[fieldId] === 'checkbox' && typeof value === 'string') {
+                            entry[fieldId] = value.split(',').map(item => item.trim()).filter(item => item);
+                        } else {
+                            entry[fieldId] = value;
+                        }
+                    });
+                    return entry;
+                });
+
+                entries.push(...importedEntries);
+                updateTable();
+                updateStatusBadge();
+                showNotification(`تم تحميل ${importedEntries.length} إدخالات من جدول البيانات بنجاح`, 'success');
+            } catch (error) {
+                console.error('Error loading data from workbook:', error);
+                showNotification(`Error loading data: ${error.message}`, 'danger');
+            }
+        }
+
+        function findMatchingFieldId(excelHeader, headerToFieldMap) {
+            return headerToFieldMap[excelHeader.toLowerCase()] || null;
+        }
+
+        function disconnectSpreadsheet() {
+            if (excelFileHandle) {
+                excelFileHandle = null;
+                connectedWorkbook = null;
+                entries = [];
+                updateTable();
+                updateSpreadsheetStatus();
+                showNotification('تم قطع الاتصال بجدول البيانات', 'info');
+            }
+        }
+
+        function updateSpreadsheetStatus() {
+            const $status = $('#spreadsheet-status');
+            const $connectBtn = $('#connect-btn');
+            const $fileLocation = $('#file-location-container');
+            const $filePath = $('#file-location-path');
+
+            if (excelFileHandle) {
+                $status.text('متصل').removeClass('bg-secondary').addClass('bg-success');
+                $fileLocation.removeClass('d-none');
+                $filePath.text(excelFileHandle.name);
+                $connectBtn.text('قطع الاتصال')
+                    .removeClass('btn-outline-primary')
+                    .addClass('btn-outline-danger')
+                    .button('refresh')
+                    .off('click')
+                    .on('click', disconnectSpreadsheet);
+            } else {
+                $status.text('غير متصل').removeClass('bg-success').addClass('bg-secondary');
+                $fileLocation.addClass('d-none');
+                $filePath.text('لم يتم التحديد');
+                $connectBtn.text('الاتصال بجدول البيانات')
+                    .removeClass('btn-outline-danger')
+                    .addClass('btn-outline-primary')
+                    .button('refresh')
+                    .off('click')
+                    .on('click', connectToSpreadsheet);
+            }
+        }
+
+        async function saveEntriesToExcel() {
+            if (!excelFileHandle) {
+                showNotification('لا يوجد جدول بيانات متصل. يرجى الاتصال بجدول بيانات أولاً.', 'warning');
+                return false;
+            }
+
+            try {
+                const currentFormSettings = formSettings || loadFormSettings();
+                if (!currentFormSettings || !currentFormSettings.tableColumns) {
+                    if (entries.length > 0) {
+                        const firstEntry = entries[0];
+                        const basicColumns = Object.keys(firstEntry).map(key => ({
+                            field: key,
+                            header: key.charAt(0).toUpperCase() + key.slice(1)
+                        }));
+                        const wb = XLSX.utils.book_new();
+                        const ws = XLSX.utils.json_to_sheet(entries);
+                        XLSX.utils.book_append_sheet(wb, ws, 'Entries');
+                        const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                        const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                        const writable = await excelFileHandle.createWritable();
+                        await writable.write(blob);
+                        await writable.close();
+                        showNotification(`${entries.length} إدخالات تم حفظها في جدول البيانات المتصل`, 'success');
+                        return true;
+                    } else {
+                        showNotification('لا توجد بيانات لحفظها', 'warning');
+                        return false;
+                    }
+                }
+
+                const fieldDefinitions = {};
+                if (currentFormSettings.fields && Array.isArray(currentFormSettings.fields)) {
+                    currentFormSettings.fields.forEach(field => {
+                        fieldDefinitions[field.id] = field;
+                    });
+                }
+
+                const exportData = entries.map(entry => {
+                    const rowData = {};
+                    currentFormSettings.tableColumns.forEach(column => {
+                        const fieldId = column.field;
+                        const headerText = column.header || fieldId;
+                        const fieldValue = entry[fieldId];
+                        const fieldDef = fieldDefinitions[fieldId];
+
+                        if (fieldId === 'timestamp') {
+                            rowData[headerText] = fieldValue ? new Date(fieldValue).toLocaleString() : '';
+                            return;
+                        }
+
+                        if (fieldValue === undefined || fieldValue === null) {
+                            rowData[headerText] = '';
+                            return;
+                        }
+
+                        if (Array.isArray(fieldValue)) {
+                            rowData[headerText] = fieldValue.join(', ');
+                        } else if (fieldDef && fieldDef.type === 'date' && fieldValue) {
+                            try {
+                                rowData[headerText] = new Date(fieldValue).toLocaleDateString();
+                            } catch (e) {
+                                rowData[headerText] = fieldValue;
+                            }
+                        } else {
+                            rowData[headerText] = fieldValue.toString();
+                        }
+                    });
+                    return rowData;
+                });
+
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.json_to_sheet(exportData.length > 0 ? exportData : [{}]);
+                XLSX.utils.book_append_sheet(wb, ws, 'Entries');
+                const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+                const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                const writable = await excelFileHandle.createWritable();
+                await writable.write(blob);
+                await writable.close();
+                showNotification(`${entries.length} إدخالات تم حفظها في جدول البيانات المتصل`, 'success');
+                return true;
+            } catch (error) {
+                console.error('Error saving to Excel:', error);
+                showNotification(`Error saving to Excel: ${error.message}`, 'danger');
+                return false;
+            }
+        }
+
+        async function createNewExcelFile() {
+            try {
+                if (!('showSaveFilePicker' in window)) {
+                    showNotification('متصفحك لا يدعم واجهة برمجة تطبيقات نظام الملفات.', 'danger');
+                    return false;
+                }
+
+                const fileHandle = await window.showSaveFilePicker({
+                    types: [{
+                        description: 'Excel Files',
+                        accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'] }
+                    }],
+                    suggestedName: 'entries.xlsx'
+                });
+
+                excelFileHandle = fileHandle;
+                connectedWorkbook = XLSX.utils.book_new();
+                await saveEntriesToExcel();
+                updateSpreadsheetStatus();
+                showNotification(`تم إنشاء جدول بيانات جديد: ${fileHandle.name}`, 'success');
+                return true;
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('Error creating new Excel file:', error);
+                    showNotification(`Error creating new Excel file: ${error.message}`, 'danger');
+                }
+                return false;
+            }
+        }
+
+        // Version Management
+        const APP_VERSION = '1.0';
+        $(document).ready(() => {
+            $('#version-display').text(`v${APP_VERSION}`);
+        });
+    </script>
+</body>
+</html>
